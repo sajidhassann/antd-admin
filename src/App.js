@@ -1,25 +1,47 @@
-import logo from './logo.svg';
-import './App.css';
+import { useEffect } from 'react';
+import { connect } from 'react-redux';
+import Dashboard from './components/Dashboard';
+import setAuthToken from './utils/setAuthToken';
+import { BrowserRouter as Router, Switch } from 'react-router-dom';
+import Login from './components/Login';
+import PrivateRoute from './routing/PrivateRoute';
+import PublicRoute from './routing/PublicRoute';
+import SignUp from './components/SignUp';
 
-function App() {
+const App = ({ token, loading }) => {
+  useEffect(() => {
+    setAuthToken(token);
+    return () => {
+      setAuthToken(null);
+    };
+  }, [token]);
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div>
+      <Router>
+        <>
+          <Switch>
+            <PublicRoute exact token={token} path='/login' component={Login} />
+            {/* <PublicRoute
+              exact
+              token={token}
+              path='/signup'
+              component={SignUp}
+            /> */}
+            <PrivateRoute
+              loading={loading}
+              token={token}
+              path='/'
+              component={Dashboard}
+            />
+          </Switch>
+        </>
+      </Router>
     </div>
   );
-}
+};
 
-export default App;
+const mapStateToProps = ({ user: { token, loading } }) => ({
+  token,
+  loading,
+});
+export default connect(mapStateToProps)(App);
